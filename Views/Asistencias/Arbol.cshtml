@@ -1,0 +1,433 @@
+﻿@{
+    ViewData["Title"] = "Árbol de Asistencia";
+}
+
+<style>
+    .arbol-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        padding: 20px 0;
+    }
+
+    .panel-filtros {
+        background: rgba(0, 15, 50, 0.85);
+        border: 1px solid rgba(0, 150, 255, 0.3);
+        border-radius: 15px;
+        padding: 15px 25px;
+        margin-bottom: 25px;
+    }
+
+    /* ── Árbol ── */
+    .tree {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: max-content;
+        padding: 10px;
+    }
+
+    .tree-nivel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .tree-fila {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: nowrap;
+        margin-top: 10px;
+    }
+
+    .linea-vertical {
+        width: 2px;
+        height: 30px;
+        background: rgba(0, 150, 255, 0.5);
+        margin: 0 auto;
+    }
+
+    .linea-horizontal {
+        height: 2px;
+        background: rgba(0, 150, 255, 0.5);
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    /* ── Nodos ── */
+    .nodo-raiz {
+        background: linear-gradient(135deg, #003366, #0066cc);
+        border: 2px solid rgba(0, 150, 255, 0.6);
+        border-radius: 12px;
+        padding: 15px 35px;
+        color: white;
+        font-weight: 900;
+        font-size: 1.1rem;
+        text-align: center;
+        letter-spacing: 2px;
+        box-shadow: 0 0 20px rgba(0, 150, 255, 0.4);
+        white-space: nowrap;
+    }
+
+    .nodo-nivel {
+        background: linear-gradient(135deg, #004080, #0055aa);
+        border: 1px solid rgba(0, 150, 255, 0.5);
+        border-radius: 10px;
+        padding: 10px 25px;
+        color: #aad4ff;
+        font-weight: 700;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .nodo-salon {
+        background: rgba(0, 30, 80, 0.85);
+        border: 1px solid rgba(0, 150, 255, 0.4);
+        border-radius: 8px;
+        padding: 10px 15px;
+        color: #d0e8ff;
+        font-weight: 600;
+        text-align: center;
+        min-width: 100px;
+        cursor: pointer;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+
+        .nodo-salon:hover {
+            border-color: #00ccff;
+            box-shadow: 0 0 15px rgba(0, 200, 255, 0.4);
+            transform: translateY(-3px);
+        }
+
+    /* ── Estudiantes ── */
+    .estudiantes-container {
+        display: none;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 15px;
+        max-width: 400px;
+    }
+
+    .nodo-presente {
+        background: rgba(0, 80, 40, 0.85);
+        border: 2px solid #00cc66;
+        border-radius: 10px;
+        padding: 8px;
+        text-align: center;
+        color: white;
+        font-size: 0.75rem;
+        width: 110px;
+    }
+
+    .nodo-ausente {
+        background: rgba(100, 0, 0, 0.85);
+        border: 2px solid #cc0000;
+        border-radius: 10px;
+        padding: 8px;
+        text-align: center;
+        color: white;
+        font-size: 0.75rem;
+        width: 110px;
+    }
+
+    .foto-est {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255,255,255,0.3);
+        margin-bottom: 4px;
+    }
+
+    .avatar-est {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: rgba(0, 80, 150, 0.8);
+        border: 2px solid rgba(0, 150, 255, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 900;
+        margin: 0 auto 4px auto;
+    }
+
+    .leyenda {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .leyenda-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #d0e8ff;
+        font-size: 0.85rem;
+    }
+
+    .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .dot-presente {
+        background: #00cc66;
+    }
+
+    .dot-ausente {
+        background: #cc0000;
+    }
+
+    .dot-salon {
+        background: #0066cc;
+    }
+
+    .grupo-salon {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+
+    <!-- Panel superior -->
+    <div class="panel-filtros">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <h4 style="color:#00ccff; margin:0;">
+                    🌳 Árbol de Asistencia
+                </h4>
+                <small style="color:#aad4ff;">
+                    Universidad Mariano Gálvez — Sede Boca del Monte
+                </small>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="leyenda">
+                    <div class="leyenda-item">
+                        <div class="dot dot-presente"></div>
+                        <span>Presente</span>
+                    </div>
+                    <div class="leyenda-item">
+                        <div class="dot dot-ausente"></div>
+                        <span>Ausente</span>
+                    </div>
+                    <div class="leyenda-item">
+                        <div class="dot dot-salon"></div>
+                        <span>Salón</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <span style="color:#aad4ff;">
+                    📅 @DateTime.Today.ToString("dd/MM/yyyy")
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Árbol -->
+    <div class="arbol-wrapper">
+        <div class="tree">
+
+            <!-- RAÍZ -->
+            <div class="nodo-raiz">🏛️ UMG BOCA DEL MONTE</div>
+            <div class="linea-vertical"></div>
+            <div class="linea-horizontal"></div>
+
+            <!-- NIVELES -->
+            <div class="tree-fila" style="align-items: flex-start;">
+
+                <!-- PRIMER NIVEL -->
+                <div class="tree-nivel">
+                    <div class="linea-vertical"></div>
+                    <div class="nodo-nivel">📐 Primer Nivel</div>
+                    <div class="linea-vertical"></div>
+                    <div class="tree-fila">
+                        @foreach (var salon in ViewBag.Nivel1 as
+                            List<SistemaBiometricoUMG.Models.Ubicacion>)
+                        {
+                            <div class="grupo-salon">
+                                <div class="nodo-salon"
+                                     onclick="toggleSalon(@salon.Id)">
+                                    🚪 @salon.Nombre
+                                </div>
+                                <div id="salon_@salon.Id"
+                                     class="estudiantes-container">
+                                    @{
+                                        var est = ViewBag.Estudiantes
+                                            as Dictionary<int,
+                                            List<dynamic>>;
+                                        var lista = est.ContainsKey(salon.Id)
+                                            ? est[salon.Id]
+                                            : new List<dynamic>();
+                                    }
+                                    @if (!lista.Any())
+                                    {
+                                        <small style="color:#aad4ff;">
+                                            Sin estudiantes
+                                        </small>
+                                    }
+                                    @foreach (var e in lista)
+                                    {
+                                        <div class="@(e.Presente ?
+                                                                                         "nodo-presente" : "nodo-ausente")">
+                                            @if (!string.IsNullOrEmpty(
+                                                (string)e.FotoRuta))
+                                            {
+                                                <img src="@e.FotoRuta"
+                                                     class="foto-est" />
+                                            }
+                                            else
+                                            {
+                                                <div class="avatar-est">
+                                                    @e.Nombre.ToString()[0]
+                                                </div>
+                                            }
+                                            <div style="font-size:0.7rem;">
+                                                @e.Nombre
+                                            </div>
+                                            <small>
+                                                @(e.Presente ?
+                                                "✅" : "❌")
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- SEGUNDO NIVEL -->
+                <div class="tree-nivel">
+                    <div class="linea-vertical"></div>
+                    <div class="nodo-nivel">📐 Segundo Nivel</div>
+                    <div class="linea-vertical"></div>
+                    <div class="tree-fila">
+                        @foreach (var salon in ViewBag.Nivel2 as
+                            List<SistemaBiometricoUMG.Models.Ubicacion>)
+                        {
+                            <div class="grupo-salon">
+                                <div class="nodo-salon"
+                                     onclick="toggleSalon(@salon.Id)">
+                                    🚪 @salon.Nombre
+                                </div>
+                                <div id="salon_@salon.Id"
+                                     class="estudiantes-container">
+                                    @{
+                                        var est2 = ViewBag.Estudiantes
+                                            as Dictionary<int,
+                                            List<dynamic>>;
+                                        var lista2 = est2.ContainsKey(salon.Id)
+                                            ? est2[salon.Id]
+                                            : new List<dynamic>();
+                                    }
+                                    @foreach (var e in lista2)
+                                    {
+                                        <div class="@(e.Presente ?
+                                                                                         "nodo-presente" : "nodo-ausente")">
+                                            @if (!string.IsNullOrEmpty(
+                                                (string)e.FotoRuta))
+                                            {
+                                                <img src="@e.FotoRuta"
+                                                     class="foto-est" />
+                                            }
+                                            else
+                                            {
+                                                <div class="avatar-est">
+                                                    @e.Nombre.ToString()[0]
+                                                </div>
+                                            }
+                                            <div style="font-size:0.7rem;">
+                                                @e.Nombre
+                                            </div>
+                                            <small>
+                                                @(e.Presente ? "✅" : "❌")
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- TERCER NIVEL -->
+                <div class="tree-nivel">
+                    <div class="linea-vertical"></div>
+                    <div class="nodo-nivel">📐 Tercer Nivel</div>
+                    <div class="linea-vertical"></div>
+                    <div class="tree-fila">
+                        @foreach (var salon in ViewBag.Nivel3 as
+                            List<SistemaBiometricoUMG.Models.Ubicacion>)
+                        {
+                            <div class="grupo-salon">
+                                <div class="nodo-salon"
+                                     onclick="toggleSalon(@salon.Id)">
+                                    🚪 @salon.Nombre
+                                </div>
+                                <div id="salon_@salon.Id"
+                                     class="estudiantes-container">
+                                    @{
+                                        var est3 = ViewBag.Estudiantes
+                                            as Dictionary<int,
+                                            List<dynamic>>;
+                                        var lista3 = est3.ContainsKey(salon.Id)
+                                            ? est3[salon.Id]
+                                            : new List<dynamic>();
+                                    }
+                                    @foreach (var e in lista3)
+                                    {
+                                        <div class="@(e.Presente ?
+                                                                                         "nodo-presente" : "nodo-ausente")">
+                                            @if (!string.IsNullOrEmpty(
+                                                (string)e.FotoRuta))
+                                            {
+                                                <img src="@e.FotoRuta"
+                                                     class="foto-est" />
+                                            }
+                                            else
+                                            {
+                                                <div class="avatar-est">
+                                                    @e.Nombre.ToString()[0]
+                                                </div>
+                                            }
+                                            <div style="font-size:0.7rem;">
+                                                @e.Nombre
+                                            </div>
+                                            <small>
+                                                @(e.Presente ? "✅" : "❌")
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleSalon(id) {
+            const div = document.getElementById('salon_' + id);
+            if (div.style.display === 'flex') {
+                div.style.display = 'none';
+            } else {
+                div.style.display = 'flex';
+            }
+        }
+    </script>
+}

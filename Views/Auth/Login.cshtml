@@ -1,0 +1,189 @@
+﻿@{
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = null; // Sin navbar para la página de login
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login — Sistema Biométrico UMG</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            background: url('/img/fondo.gif') center center / cover fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 5, 30, 0.85);
+            z-index: 0;
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(0, 15, 50, 0.90);
+            border: 1px solid rgba(0, 150, 255, 0.4);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 40px rgba(0, 100, 255, 0.2);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo h2 {
+            color: #00ccff;
+            font-weight: 900;
+            letter-spacing: 3px;
+            font-size: 1.4rem;
+            text-shadow: 0 0 20px rgba(0, 200, 255, 0.5);
+        }
+
+        .login-logo p {
+            color: #aad4ff;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin: 5px 0 0 0;
+        }
+
+        .scan-line {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, 
+                transparent, #00ccff, transparent);
+            margin: 15px 0;
+            animation: scan 2s infinite;
+        }
+
+        @@keyframes scan {
+            0%   { opacity: 0.3; }
+            50%  { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        .form-label {
+            color: #aad4ff !important;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .form-control {
+            background: rgba(0, 20, 70, 0.8) !important;
+            border: 1px solid rgba(0, 150, 255, 0.4) !important;
+            color: white !important;
+            border-radius: 10px;
+            padding: 12px 15px;
+        }
+
+        .form-control:focus {
+            border-color: #00ccff !important;
+            box-shadow: 0 0 15px rgba(0, 200, 255, 0.3) !important;
+        }
+
+        .form-control::placeholder {
+            color: rgba(170, 212, 255, 0.4) !important;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #0044cc, #0099ff);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 700;
+            letter-spacing: 2px;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0, 150, 255, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 200, 255, 0.5);
+        }
+
+        .icono-lock {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+            filter: drop-shadow(0 0 10px rgba(0, 200, 255, 0.6));
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+
+            <div class="login-logo">
+                <img src="/img/logo_umg.png" height="80" class="mb-2"
+                style="filter: drop-shadow(0 0 10px rgba(0,200,255,0.6));" />
+                <h2>SISTEMA BIOMÉTRICO</h2>
+                <p>UNIVERSIDAD MARIANO GÁLVEZ</p>
+                <p>SEDE BOCA DEL MONTE</p>
+            </div>
+
+            <div class="scan-line"></div>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger text-center mb-3" 
+                     style="background:rgba(150,0,0,0.5); 
+                            border-color:rgba(255,80,80,0.4); 
+                            color:#ffaaaa;">
+                    ⚠️ @TempData["Error"]
+                </div>
+            }
+
+            <form method="post" action="/Auth/Login">
+                <div class="mb-3">
+                    <label class="form-label">👤 USUARIO</label>
+                    <input name="usuario" type="text" 
+                           class="form-control"
+                           placeholder="Ingresa tu usuario"
+                           required autofocus />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">🔑 CONTRASEÑA</label>
+                    <input name="contrasena" type="password" 
+                           class="form-control"
+                           placeholder="Ingresa tu contraseña"
+                           required />
+                </div>
+                <button type="submit" class="btn-login">
+                    🚀 INGRESAR AL SISTEMA
+                </button>
+            </form>
+
+            <div class="text-center mt-3">
+                <small style="color:rgba(170,212,255,0.4); 
+                              letter-spacing:1px;">
+                    © 2026 — UMG INGENIERÍA EN SISTEMAS
+                </small>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

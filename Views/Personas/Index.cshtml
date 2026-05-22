@@ -1,0 +1,66 @@
+﻿@model List<SistemaBiometricoUMG.Models.Persona>
+@{
+    ViewData["Title"] = "Personas Registradas";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>👥 Personas Registradas</h3>
+        <a href="/Personas/Registrar" class="btn btn-primary">
+            ➕ Nueva Persona
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Foto</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Tipo</th>
+                    <th>Carrera</th>
+                    <th>No. Carnet</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(p.FotoRuta))
+                            {
+                                <img src="@p.FotoRuta" width="50" height="50"
+                                     class="rounded-circle" />
+                            }
+                            else
+                            {
+                                <span>Sin foto</span>
+                            }
+                        </td>
+                        <td>@p.Nombre @p.Apellido</td>
+                        <td>@p.Correo</td>
+                        <td>@p.TipoPersona</td>
+                        <td>@p.Carrera</td>
+                        <td>@p.NumCarnet</td>
+                        <td>
+                            <!-- ✅ Botón Ver Carnet -->
+                            <a href="/Personas/Detalle/@p.Id"
+                               class="btn btn-sm btn-info">
+                                🪪 Ver Carnet
+                            </a>
+                            <!-- ✅ Botón Historial Carreras -->
+                            <a asp-controller="Carreras"
+                               asp-action="Historial"
+                               asp-route-personaId="@p.Id"
+                               class="btn btn-sm btn-warning ms-1">
+                                📚 Carreras
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

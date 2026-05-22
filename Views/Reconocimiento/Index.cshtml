@@ -1,0 +1,219 @@
+﻿@{
+    ViewData["Title"] = "Reconocimiento Facial";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header text-white text-center py-3"
+             style="background-color:#003366;">
+            <h3>👁️ Sistema de Reconocimiento Facial</h3>
+            <p class="mb-0">Control de Acceso Biométrico UMG</p>
+        </div>
+        <div class="card-body">
+            <div class="row">
+
+                <!-- Cámara -->
+                <div class="col-md-6 text-center">
+                    <h5>📷 Cámara en vivo</h5>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Ubicación:</label>
+                        <select id="ubicacionId" class="form-select">
+                            @foreach (var u in ViewBag.Ubicaciones as
+                                List<SistemaBiometricoUMG.Models.Ubicacion>)
+                            {
+                                <option value="@u.Id">@u.Nombre</option>
+                            }
+                        </select>
+                    </div>
+
+                    <video id="camara" width="400" height="300"
+                           autoplay class="border rounded mb-2"></video>
+                    <canvas id="canvas" width="400" height="300"
+                            class="d-none"></canvas>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-lg"
+                                onclick="iniciarCamara()">
+                            📷 Activar Cámara
+                        </button>
+                        <button class="btn btn-success btn-lg"
+                                id="btnIniciarScan"
+                                onclick="iniciarScaneo()" disabled>
+                            🔍 Iniciar Reconocimiento Automático
+                        </button>
+                        <button class="btn btn-danger btn-lg"
+                                onclick="detenerScaneo()"
+                                id="btnDetener" style="display:none;">
+                            ⏹️ Detener
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resultado -->
+                <div class="col-md-6">
+                    <h5>📋 Resultado</h5>
+
+                    <div id="panelEspera" class="alert alert-info text-center p-4">
+                        <h4>⏳ Esperando...</h4>
+                        <p>Active la cámara e inicie el reconocimiento</p>
+                    </div>
+
+                    <div id="panelExito" class="d-none">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white text-center">
+                                <h4>✅ ACCESO PERMITIDO</h4>
+                            </div>
+                            <div class="card-body text-center">
+                                <img id="fotoPersona" src=""
+                                     class="rounded-circle mb-3"
+                                     width="120" height="120"
+                                     style="object-fit:cover;" />
+                                <h4 id="nombrePersona"></h4>
+                                <p id="mensajeExito" class="text-success fw-bold"></p>
+                                <p class="text-muted small">
+                                    Ingreso registrado automáticamente
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="panelRestriccion" class="d-none">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white text-center">
+                                <h4>⛔ ACCESO DENEGADO</h4>
+                            </div>
+                            <div class="card-body text-center">
+                                <h1>🚫</h1>
+                                <h4 id="nombreRestringido"></h4>
+                                <div class="alert alert-danger">
+                                    <strong>Motivo:</strong>
+                                    <span id="motivoRestriccion"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="panelNoReconocido" class="d-none">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning text-center">
+                                <h4>❓ No Reconocido</h4>
+                            </div>
+                            <div class="card-body text-center">
+                                <h1>🤷</h1>
+                                <p>Persona no registrada en el sistema</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Historial de ingresos del día -->
+                    <div class="mt-3">
+                        <h6>📋 Últimos ingresos:</h6>
+                        <ul id="listaIngresos" class="list-group">
+                            <li class="list-group-item text-muted small">
+                                Sin ingresos aún
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let stream = null;
+        let intervalScan = null;
+
+        async function iniciarCamara() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('camara').srcObject = stream;
+                document.getElementById('btnIniciarScan').disabled = false;
+            } catch (err) {
+                alert('No se pudo acceder a la cámara: ' + err.message);
+            }
+        }
+
+        function iniciarScaneo() {
+            document.getElementById('btnIniciarScan').style.display = 'none';
+            document.getElementById('btnDetener').style.display = 'block';
+            // Escanear cada 3 segundos
+            intervalScan = setInterval(capturarYProcesar, 3000);
+        }
+
+        function detenerScaneo() {
+            clearInterval(intervalScan);
+            document.getElementById('btnIniciarScan').style.display = 'block';
+            document.getElementById('btnDetener').style.display = 'none';
+            mostrarPanel('espera');
+        }
+
+        async function capturarYProcesar() {
+            const video = document.getElementById('camara');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, 400, 300);
+            const imagenBase64 = canvas.toDataURL('image/png');
+            const ubicacionId = document.getElementById('ubicacionId').value;
+
+            try {
+                const response = await fetch('/Reconocimiento/Procesar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imagenBase64, ubicacionId })
+                });
+
+                const data = await response.json();
+                procesarResultado(data);
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function procesarResultado(data) {
+            if (data.encontrado && !data.tieneRestriccion) {
+                // Acceso permitido
+                document.getElementById('fotoPersona').src = data.foto;
+                document.getElementById('nombrePersona').textContent = data.nombre;
+                document.getElementById('mensajeExito').textContent = data.mensaje;
+                mostrarPanel('exito');
+                agregarIngreso(data.nombre, '✅');
+                setTimeout(() => mostrarPanel('espera'), 4000);
+
+            } else if (data.encontrado && data.tieneRestriccion) {
+                // Acceso denegado
+                document.getElementById('nombreRestringido').textContent = data.nombre;
+                document.getElementById('motivoRestriccion').textContent =
+                    data.motivoRestriccion;
+                mostrarPanel('restriccion');
+                agregarIngreso(data.nombre, '⛔');
+                setTimeout(() => mostrarPanel('espera'), 4000);
+
+            } else {
+                mostrarPanel('noReconocido');
+                setTimeout(() => mostrarPanel('espera'), 2000);
+            }
+        }
+
+        function mostrarPanel(tipo) {
+            document.getElementById('panelEspera').classList.add('d-none');
+            document.getElementById('panelExito').classList.add('d-none');
+            document.getElementById('panelRestriccion').classList.add('d-none');
+            document.getElementById('panelNoReconocido').classList.add('d-none');
+            document.getElementById('panel' +
+                tipo.charAt(0).toUpperCase() + tipo.slice(1))
+                .classList.remove('d-none');
+        }
+
+        function agregarIngreso(nombre, icono) {
+            const lista = document.getElementById('listaIngresos');
+            if (lista.children[0].classList.contains('text-muted'))
+                lista.innerHTML = '';
+            const hora = new Date().toLocaleTimeString();
+            lista.innerHTML = `<li class="list-group-item small">
+                ${icono} ${nombre} — ${hora}</li>` + lista.innerHTML;
+        }
+    </script>
+}

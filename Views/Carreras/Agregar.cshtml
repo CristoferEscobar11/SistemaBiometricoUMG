@@ -1,0 +1,89 @@
+﻿@{
+    ViewData["Title"] = "Agregar Carrera";
+    var persona = ViewBag.Persona as SistemaBiometricoUMG.Models.Persona;
+}
+
+<div class="container mt-4">
+    <div class="card shadow" style="max-width:600px; margin:auto;">
+        <div class="card-header text-white py-3"
+             style="background-color:#003366;">
+            <h4 class="mb-0">📚 Agregar / Cambiar Carrera</h4>
+            <small style="color:#aad4ff;">
+                @persona?.Nombre @persona?.Apellido
+            </small>
+        </div>
+        <div class="card-body">
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <form method="post" action="/Carreras/Agregar">
+                <input type="hidden" name="personaId" value="@persona?.Id" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        📖 Nueva Carrera *
+                    </label>
+                    <select name="carrera" class="form-select" required>
+                        <option value="">-- Seleccione --</option>
+                        <option value="Ingeniería en Sistemas">
+                            Ingeniería en Sistemas
+                        </option>
+                        <option value="Derecho">Derecho</option>
+                        <option value="Medicina">Medicina</option>
+                        <option value="Administración">Administración</option>
+                        <option value="Psicología">Psicología</option>
+                        <option value="Contabilidad">Contabilidad</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Sección</label>
+                    <input name="seccion" class="form-control"
+                           placeholder="Ej: A, B, C" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        Motivo del cambio
+                    </label>
+                    <textarea name="motivo" class="form-control" rows="3"
+                              placeholder="Ej: Cambio de carrera,
+                    doble titulación...">
+                </textarea>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    <input type="checkbox" name="cerrarAnterior"
+                           class="form-check-input"
+                           id="cerrarAnterior" value="true" />
+                    <label class="form-check-label" for="cerrarAnterior">
+                        ⚠️ Cerrar carrera anterior
+                        (si NO la marca llevará ambas carreras)
+                    </label>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>Carrera actual:</strong>
+                @(string.IsNullOrEmpty(persona?.Carrera) ?
+                  "Sin carrera asignada" : persona.Carrera)
+                — Sección: @persona?.Seccion
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-success btn-lg px-4">
+                    ✅ Guardar Cambio
+                </button>
+                <a href="/Carreras/Historial/@persona?.Id"
+                   class="btn btn-secondary btn-lg px-4 ms-2">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+</div>

@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BiometricoUMG</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/BiometricoUMG.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="/Home/Index">
+                    <img src="/img/logo_umg.png" height="40" class="me-2"
+                         style="filter: drop-shadow(0 0 5px rgba(0,200,255,0.5));" />
+                    <span>BiometricoUMG</span>
+                </a>
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Home/Index">
+                                    🏠 Inicio
+                                </a>9i
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Personas/Index">
+                                    👥 Personas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Personas/Registrar">
+                                    ➕ Registrar
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Asistencias/Panel">
+                                    🌳 Asistencias
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Asistencias/Arbol">
+                                    🌲 Árbol de Asistencia
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Restricciones/Index">
+                                    🚫 Restricciones
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Reconocimiento/Index">
+                                    👁️ Reconocimiento
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle"
+                                       href="#" role="button"
+                                       data-bs-toggle="dropdown">
+                                    👤 @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end"
+                                    style="background:rgba(0,15,50,0.95);
+                                    border:1px solid rgba(0,150,255,0.4);">
+                                    <li>
+                                        <a class="dropdown-item"
+                                               href="/Auth/Logout"
+                                               style="color:#aad4ff;">
+                                            🚪 Cerrar Sesión
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 - BiometricoUMG
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

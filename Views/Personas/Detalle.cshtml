@@ -1,0 +1,76 @@
+﻿@model SistemaBiometricoUMG.Models.Persona
+@{
+    ViewData["Title"] = "Carnet UMG";
+}
+
+<div class="container mt-4 text-center">
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success">✅ @TempData["Exito"]</div>
+    }
+
+    <!-- Carnet visual -->
+    <div id="carnet" class="card mx-auto shadow"
+         style="max-width:500px; border: 3px solid #003366;">
+        <div class="card-header text-white text-center py-3"
+             style="background-color:#003366;">
+            <img src="/img/logo_umg.png" height="60" class="me-2" />
+            <h5 class="d-inline align-middle">
+                UNIVERSIDAD MARIANO GÁLVEZ
+            </h5>
+            <p class="mb-0 small">Sede Boca del Monte</p>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-4">
+                    @if (!string.IsNullOrEmpty(Model.FotoRuta))
+                    {
+                        <img src="@Model.FotoRuta" class="img-fluid rounded border" />
+                    }
+                    else
+                    {
+                        <div class="bg-secondary text-white p-4 rounded">
+                            Sin foto
+                        </div>
+                    }
+                </div>
+                <div class="col-8 text-start">
+                    <h5>@Model.Nombre @Model.Apellido</h5>
+                    <p class="mb-1">
+                        <strong>Carnet:</strong> @Model.NumCarnet
+                    </p>
+                    <p class="mb-1">
+                        <strong>Tipo:</strong> @Model.TipoPersona
+                    </p>
+                    <p class="mb-1">
+                        <strong>Carrera:</strong> @Model.Carrera
+                    </p>
+                    <p class="mb-1">
+                        <strong>Sección:</strong> @Model.Seccion
+                    </p>
+                    <p class="mb-1">
+                        <strong>Correo:</strong> @Model.Correo
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-center"
+             style="background-color:#003366; color:white;">
+            <small>2026 — Documento oficial UMG</small>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="/Personas/Index" class="btn btn-secondary">
+            ← Volver al listado
+        </a>
+        <a href="/Personas/Registrar" class="btn btn-primary ms-2">
+            ➕ Registrar otra persona
+        </a>
+        <a href="/Personas/DescargarCarnet/@Model.Id"
+               class="btn btn-danger btn-lg px-5 ms-2">
+            📄 Descargar Carnet PDF
+        </a>
+    </div>
+</div>

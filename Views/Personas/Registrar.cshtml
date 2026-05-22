@@ -1,0 +1,155 @@
+﻿@model SistemaBiometricoUMG.Models.Persona
+@{
+    ViewData["Title"] = "Registro de Persona";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white text-center">
+            <h3>🎓 Registro Biométrico UMG</h3>
+            <p class="mb-0">Universidad Mariano Gálvez - Sede Boca del Monte</p>
+        </div>
+        <div class="card-body">
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <form id="formRegistro" method="post" action="/Personas/Registrar">
+                <div class="row">
+
+                    <!-- Columna izquierda -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre *</label>
+                            <input name="Nombre" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Apellido *</label>
+                            <input name="Apellido" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Teléfono</label>
+                            <input name="Telefono" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Correo UMG *</label>
+                            <input name="Correo" type="email" class="form-control"
+                                   placeholder="usuario@miumg.edu.gt" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Persona *</label>
+                            <select name="TipoPersona" class="form-select" required>
+                                <option value="">-- Seleccione --</option>
+                                <option value="Estudiante">Estudiante</option>
+                                <option value="Catedrático">Catedrático</option>
+                                <option value="Administrativo">Administrativo</option>
+                                <option value="Operativo">Operativo</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Carrera</label>
+                            <select name="Carrera" class="form-select">
+                                <option value="">-- Seleccione --</option>
+                                <option value="Ingeniería en Sistemas">Ingeniería en Sistemas</option>
+                                <option value="Derecho">Derecho</option>
+                                <option value="Medicina">Medicina</option>
+                                <option value="Administración">Administración</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Sección</label>
+                            <input name="Seccion" class="form-control"
+                                   placeholder="Ej: A, B, C" />
+                        </div>
+                    </div>
+
+                    <!-- Columna derecha - Cámara -->
+                    <div class="col-md-6 text-center">
+                        <label class="form-label d-block">📷 Fotografía</label>
+                        
+                        <!-- Video de la cámara -->
+                        <video id="camara" width="300" height="250"
+                               autoplay class="border rounded mb-2"></video>
+                        
+                        <!-- Canvas para capturar -->
+                        <canvas id="canvas" width="300" height="250"
+                                class="d-none"></canvas>
+                        
+                        <!-- Foto capturada -->
+                        <img id="fotoCapturada" src=""
+                             class="border rounded mb-2 d-none"
+                             width="300" height="250" />
+
+                        <input type="hidden" name="fotoBase64" id="fotoBase64" />
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-secondary"
+                                    onclick="iniciarCamara()">
+                                📷 Activar Cámara
+                            </button>
+                            <button type="button" class="btn btn-warning"
+                                    onclick="capturarFoto()">
+                                📸 Capturar Foto
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary"
+                                    onclick="repetirFoto()">
+                                🔄 Repetir Foto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success btn-lg px-5">
+                        ✅ Registrar Persona
+                    </button>
+                    <a href="/Personas/Index" class="btn btn-outline-secondary btn-lg px-5 ms-2">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let stream = null;
+
+        async function iniciarCamara() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('camara').srcObject = stream;
+                document.getElementById('camara').classList.remove('d-none');
+                document.getElementById('fotoCapturada').classList.add('d-none');
+            } catch (err) {
+                alert('No se pudo acceder a la cámara: ' + err.message);
+            }
+        }
+
+        function capturarFoto() {
+            const video = document.getElementById('camara');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, 300, 250);
+
+            const dataUrl = canvas.toDataURL('image/png');
+            document.getElementById('fotoBase64').value = dataUrl;
+            document.getElementById('fotoCapturada').src = dataUrl;
+            document.getElementById('fotoCapturada').classList.remove('d-none');
+            document.getElementById('camara').classList.add('d-none');
+
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            alert('✅ Foto capturada correctamente');
+        }
+
+        function repetirFoto() {
+            document.getElementById('fotoCapturada').classList.add('d-none');
+            document.getElementById('fotoBase64').value = '';
+            iniciarCamara();
+        }
+    </script>
+}

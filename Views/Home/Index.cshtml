@@ -1,0 +1,218 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+}
+
+<!-- Fondo con GIF -->
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    .fondo-gif {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('/img/fondo.gif.gif') center center / cover no-repeat;
+        z-index: -2;
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 20, 0.40);
+        z-index: -1;
+    }
+
+    .hero-section {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        padding: 20px;
+    }
+
+    .hero-titulo {
+        font-size: 3rem;
+        font-weight: 900;
+        text-shadow: 0 0 30px rgba(0, 150, 255, 0.8);
+        letter-spacing: 3px;
+        margin-bottom: 10px;
+    }
+
+    .hero-subtitulo {
+        font-size: 1.2rem;
+        color: #aad4ff;
+        margin-bottom: 40px;
+        letter-spacing: 2px;
+    }
+
+    .linea-azul {
+        width: 100px;
+        height: 3px;
+        background: linear-gradient(to right, #0066ff, #00ccff);
+        margin: 0 auto 30px auto;
+        border-radius: 5px;
+    }
+
+    .card-modulo {
+        background: rgba(0, 20, 60, 0.75);
+        border: 1px solid rgba(0, 150, 255, 0.4);
+        border-radius: 15px;
+        padding: 30px 20px;
+        color: white;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        backdrop-filter: blur(5px);
+    }
+
+    .card-modulo:hover {
+        background: rgba(0, 60, 150, 0.85);
+        border-color: rgba(0, 200, 255, 0.8);
+        transform: translateY(-8px);
+        box-shadow: 0 0 30px rgba(0, 150, 255, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .card-modulo .icono {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .card-modulo h5 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+
+    .card-modulo p {
+        font-size: 0.85rem;
+        color: #aad4ff;
+        margin: 0;
+    }
+
+    .badge-sistema {
+        background: linear-gradient(to right, #0044cc, #0099ff);
+        color: white;
+        padding: 6px 18px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+
+    .scan-line {
+        width: 200px;
+        height: 2px;
+        background: linear-gradient(to right, 
+            transparent, #00ccff, transparent);
+        margin: 20px auto;
+        animation: scan 2s infinite;
+    }
+
+    @@keyframes scan {
+        0%   { opacity: 0.3; transform: scaleX(0.5); }
+        50%  { opacity: 1;   transform: scaleX(1.2); }
+        100% { opacity: 0.3; transform: scaleX(0.5); }
+    }
+
+    .footer-home {
+        text-align: center;
+        color: rgba(170, 212, 255, 0.6);
+        font-size: 0.8rem;
+        padding: 20px;
+        letter-spacing: 1px;
+    }
+</style>
+
+<!-- Capas de fondo -->
+<div class="fondo-gif"></div>
+<div class="overlay"></div>
+
+<!-- Contenido principal -->
+<div class="hero-section">
+    <div class="w-100">
+
+        <!-- Encabezado -->
+        <img src="/img/logo_umg.png" height="100" class="mb-3"
+     style="filter: drop-shadow(0 0 15px rgba(0,200,255,0.7));" />
+    <br/>
+    <div class="badge-sistema">🔒 SISTEMA BIOMÉTRICO</div>
+
+
+        <div class="badge-sistema">🔒 SISTEMA BIOMÉTRICO</div>
+        <h1 class="hero-titulo">UNIVERSIDAD MARIANO GÁLVEZ</h1>
+        <p class="hero-subtitulo">
+            SEDE BOCA DEL MONTE — CONTROL DE ACCESO BIOMÉTRICO
+        </p>
+        <div class="scan-line"></div>
+        <div class="linea-azul"></div>
+
+        <!-- Módulos -->
+        <div class="container">
+            <div class="row g-4 justify-content-center">
+
+                <div class="col-md-3">
+                    <a href="/Personas/Registrar" class="card-modulo">
+                        <span class="icono">👤</span>
+                        <h5>REGISTRO</h5>
+                        <p>Registro biográfico y biométrico de personas</p>
+                    </a>
+                </div>
+
+                <div class="col-md-3">
+                    <a href="/Reconocimiento/Index" class="card-modulo">
+                        <span class="icono">👁️</span>
+                        <h5>RECONOCIMIENTO</h5>
+                        <p>Identificación facial en tiempo real</p>
+                    </a>
+                </div>
+
+                <div class="col-md-3">
+                    <a href="/Asistencias/Panel" class="card-modulo">
+                        <span class="icono">🌳</span>
+                        <h5>ASISTENCIA</h5>
+                        <p>Panel de control de asistencia por salón</p>
+                    </a>
+                </div>
+
+                <div class="col-md-3">
+                    <a href="/Restricciones/Index" class="card-modulo">
+                        <span class="icono">🚫</span>
+                        <h5>RESTRICCIONES</h5>
+                        <p>Control de personas con acceso restringido</p>
+                    </a>
+                </div>
+
+                <div class="col-md-3">
+                    <a href="/Personas/Index" class="card-modulo">
+                        <span class="icono">👥</span>
+                        <h5>DIRECTORIO</h5>
+                        <p>Listado completo de personas registradas</p>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-home mt-5">
+            © 2026 — UNIVERSIDAD MARIANO GÁLVEZ — 
+            INGENIERÍA EN SISTEMAS
+        </div>
+
+    </div>
+</div>

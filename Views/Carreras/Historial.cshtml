@@ -1,0 +1,175 @@
+﻿@model List<SistemaBiometricoUMG.Models.HistorialCarrera>
+@{
+    ViewData["Title"] = "Historial de Carreras";
+    var persona = ViewBag.Persona as SistemaBiometricoUMG.Models.Persona;
+    var activas = Model.Where(h => h.Activo).ToList();
+    var inactivas = Model.Where(h => !h.Activo).ToList();
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header py-3 d-flex justify-content-between"
+             style="background-color:#003366;">
+            <div>
+                <h4 class="mb-0" style="color:white;">
+                    📚 Historial de Carreras
+                </h4>
+                <small style="color:#aad4ff;">
+                    @persona?.Nombre @persona?.Apellido
+                    — @persona?.Correo
+                </small>
+            </div>
+            <a asp-controller="Carreras"
+               asp-action="Agregar"
+               asp-route-personaId="@persona?.Id"
+               class="btn btn-warning">
+                ➕ Agregar / Cambiar Carrera
+            </a>
+        </div>
+        <div class="card-body">
+
+            @if (TempData["Exito"] != null)
+            {
+                <div class="alert alert-success">@TempData["Exito"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <!-- ✅ CARRERAS ACTIVAS -->
+            <h5 style="color:#00cc66; margin-bottom:15px;">
+                ✅ Carreras Activas
+            </h5>
+
+            @if (!activas.Any())
+            {
+                <div class="alert alert-info text-center mb-4">
+                    No hay carreras activas registradas.
+                </div>
+            }
+            else
+            {
+                <div class="row g-3 mb-4">
+                    @foreach (var h in activas)
+                    {
+                        <div class="col-md-4">
+                            <div class="card h-100"
+                                 style="background:rgba(0,80,40,0.3);
+                                border:2px solid #00cc66;">
+                                <div class="card-body">
+                                    <h5 style="color:#00cc66;">
+                                        🎓 @h.Carrera
+                                    </h5>
+                                    <p class="mb-1">
+                                        <strong>Sección:</strong>
+                                        @(string.IsNullOrEmpty(h.Seccion) ?
+                                          "—" : h.Seccion)
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Desde:</strong>
+                                        @h.FechaInicio.ToString("dd/MM/yyyy")
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(h.Motivo))
+                                    {
+                                        <p class="mb-1">
+                                            <strong>Motivo:</strong>
+                                            @h.Motivo
+                                        </p>
+                                    }
+                                    <span class="badge bg-success mt-2">
+                                        ✅ Activa
+                                    </span>
+                                </div>
+                                <div class="card-footer text-center"
+                                     style="background:transparent;">
+                                    <form method="post"
+                                          action="/Carreras/Desactivar"
+                                          onsubmit="return confirm(
+                                        '¿Desactivar esta carrera?')">
+                                        <input type="hidden"
+                                               name="historialId"
+                                               value="@h.Id" />
+                                        <input type="hidden"
+                                               name="personaId"
+                                               value="@persona?.Id" />
+                                        <button type="submit"
+                                                class="btn btn-sm btn-danger">
+                                            🚫 Desactivar Carrera
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- ❌ CARRERAS INACTIVAS -->
+            @if (inactivas.Any())
+            {
+                <h5 style="color:#aad4ff; margin-bottom:15px;">
+                    📋 Historial de Carreras Anteriores
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Carrera</th>
+                                <th>Sección</th>
+                                <th>Fecha Inicio</th>
+                                <th>Fecha Fin</th>
+                                <th>Motivo</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var h in inactivas)
+                            {
+                                <tr>
+                                    <td>@h.Carrera</td>
+                                    <td>@h.Seccion</td>
+                                    <td>
+                                        @h.FechaInicio.ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td>
+                                        @(h.FechaFin.HasValue ?
+                                          h.FechaFin.Value.ToString("dd/MM/yyyy")
+                                          : "—")
+                                    </td>
+                                    <td>
+                                        @(string.IsNullOrEmpty(h.Motivo) ?
+                                          "—" : h.Motivo)
+                                    </td>
+                                    <td>
+                                        <form method="post"
+                                              action="/Carreras/Reactivar"
+                                              onsubmit="return confirm(
+                                            '¿Reactivar esta carrera?')">
+                                            <input type="hidden"
+                                                   name="historialId"
+                                                   value="@h.Id" />
+                                            <input type="hidden"
+                                                   name="personaId"
+                                                   value="@persona?.Id" />
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-success">
+                                                ✅ Reactivar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <div class="mt-3">
+                <a href="/Personas/Index" class="btn btn-secondary">
+                    ← Volver al directorio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

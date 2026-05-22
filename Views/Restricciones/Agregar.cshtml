@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "Agregar Restricción";
+}
+
+<div class="container mt-4">
+    <div class="card shadow" style="max-width:600px; margin:auto;">
+        <div class="card-header text-white text-center py-3"
+             style="background-color:#8B0000;">
+            <h4 class="mb-0">🚫 Agregar Restricción de Ingreso</h4>
+        </div>
+        <div class="card-body">
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <form method="post" action="/Restricciones/Agregar">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        Seleccionar Persona *
+                    </label>
+                    <select name="personaId" class="form-select" required>
+                        <option value="">-- Seleccione una persona --</option>
+                        @foreach (var p in ViewBag.Personas as
+                                  List<SistemaBiometricoUMG.Models.Persona>)
+                        {
+                            <option value="@p.Id">
+                                @p.Nombre @p.Apellido — @p.TipoPersona
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Motivo *</label>
+                    <textarea name="motivo" class="form-control"
+                          rows="3" required
+                              placeholder="Describa el motivo de la restricción...">
+                    </textarea>
+                </div>
+
+                <div class="alert alert-warning">
+                    ⚠️ Esta acción restringirá el acceso de la persona
+                    a las instalaciones de la universidad.
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-danger btn-lg px-4">
+                        🚫 Registrar Restricción
+                    </button>
+                    <a href="/Restricciones/Index"
+                           class="btn btn-secondary btn-lg px-4 ms-2">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
