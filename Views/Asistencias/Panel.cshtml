@@ -22,35 +22,52 @@
         </div>
         <div class="card-body">
 
-            <!-- Selector de salón -->
+            <!-- Selector de salón y curso -->
             <div class="row mb-4">
-                <div class="col-md-6">
-                    <label class="form-label fw-bold">Seleccionar Salón:</label>
-                    <select class="form-select" onchange="cambiarSalon(this.value)">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">
+                        Seleccionar Salón:
+                    </label>
+                    <select class="form-select" 
+                            onchange="cambiarSalon(this.value)">
                         @foreach (var u in Model.Ubicaciones)
                         {
-                            if (u.Id == Model.UbicacionSeleccionada)
-                            {
-                                <option value="@u.Id" selected>@u.Nombre</option>
-                            }
-                            else
-                            {
-                                <option value="@u.Id">@u.Nombre</option>
-                            }
+                            <option value="@u.Id" selected='@(u.Id == Model.UbicacionSeleccionada ? "selected" : null)'>
+                                @u.Nombre
+                            </option>
                         }
+                    </select>
                 </div>
-                <div class="col-md-6 d-flex align-items-end">
+
+                <!-- Curso del salón -->
+                @if (Model.CursoDelSalon != null)
+                {
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="alert alert-info mb-0 w-100">
+                            📚 <strong>@Model.CursoDelSalon.Nombre</strong>
+                            <br/>
+                            <small>
+                                @Model.CursoDelSalon.Carrera — 
+                                @Model.CursoDelSalon.Horario
+                            </small>
+                        </div>
+                    </div>
+                }
+
+                <div class="col-md-4 d-flex align-items-end">
                     @if (!Model.YaConfirmado)
                     {
-                        <form method="post" action="/Asistencias/Confirmar"
+                        <form method="post" 
+                              action="/Asistencias/Confirmar"
                               onsubmit="return confirm(
-                              '¿Está seguro de confirmar la asistencia?')">
+                              '¿Confirmar la asistencia del curso?')">
                             <input type="hidden" name="ubicacionId"
                                    value="@Model.UbicacionSeleccionada" />
-                     
-                            <input type="hidden" name="catedraticoid" value="10" />
-                            <button type="submit" class="btn btn-success btn-lg">
-                                ✅ Confirmar Asistencia del Curso
+                            <input type="hidden" name="catedraticoid" 
+                                   value="1" />
+                            <button type="submit" 
+                                    class="btn btn-success btn-lg">
+                                ✅ Confirmar Asistencia
                             </button>
                         </form>
                     }
@@ -63,20 +80,25 @@
                 </div>
             </div>
 
-            <!-- Árbol de asistencia -->
-            <h5 class="mb-3">👥 Estudiantes</h5>
-            <div class="row">
+            <!-- Árbol de estudiantes -->
+            <div class="row g-3">
                 @foreach (var estudiante in Model.Estudiantes)
                 {
                     bool presente = Model.PersonasPresentes
-                                        .Contains(estudiante.Id);
+                        .Contains(estudiante.Id);
+                    bool tieneSalida = Model.PersonasConSalida
+                        .Contains(estudiante.Id);
+
                     <div class="col-md-3 mb-3">
                         <div class="card text-center shadow-sm"
-                             style="border: 3px solid @(presente ? 
+                             style="border: 3px solid @(tieneSalida ? 
+                             "#ffc107" : presente ? 
                              "#28a745" : "#dc3545");">
                             <div class="card-body p-2"
-                                 style="background-color: @(presente ? 
+                                 style="background-color: @(tieneSalida ? 
+                                 "#fff3cd" : presente ? 
                                  "#d4edda" : "#f8d7da");">
+
                                 @if (!string.IsNullOrEmpty(estudiante.FotoRuta))
                                 {
                                     <img src="@estudiante.FotoRuta"
@@ -86,25 +108,56 @@
                                 }
                                 else
                                 {
-                                    <div class="rounded-circle bg-secondary 
-                                                d-inline-flex align-items-center 
+                                    <div class="rounded-circle bg-secondary
+                                                d-inline-flex align-items-center
                                                 justify-content-center mb-2"
                                          style="width:70px;height:70px;">
                                         <span class="text-white fs-4">
-                                            @estudiante.Nombre[0]
+                                            @estudiante.Nombre?[0]
                                         </span>
                                     </div>
                                 }
+
                                 <p class="fw-bold mb-0 small">
                                     @estudiante.Nombre @estudiante.Apellido
                                 </p>
-                                <p class="mb-0" style="font-size:11px;">
+                                <p class="mb-1" style="font-size:11px;">
                                     @estudiante.Correo
                                 </p>
-                                <span class="badge @(presente ? 
-                                      "bg-success" : "bg-danger") mt-1">
-                                    @(presente ? "✅ Presente" : "❌ Ausente")
-                                </span>
+
+                                @if (tieneSalida)
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        🚶 Con Salida
+                                    </span>
+                                }
+                                else if (presente)
+                                {
+                                    <span class="badge bg-success">
+                                        ✅ Presente
+                                    </span>
+                                    <!-- Botón registrar salida -->
+                                    <form method="post"
+                                          action="/Asistencias/RegistrarSalida"
+                                          class="mt-1">
+                                        <input type="hidden" 
+                                               name="personaId" 
+                                               value="@estudiante.Id" />
+                                        <input type="hidden"
+                                               name="ubicacionId"
+                                               value="@Model.UbicacionSeleccionada" />
+                                        <button type="submit"
+                                                class="btn btn-sm btn-warning">
+                                            🚶 Registrar Salida
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">
+                                        ❌ Ausente
+                                    </span>
+                                }
                             </div>
                         </div>
                     </div>
@@ -114,22 +167,28 @@
             <!-- Resumen -->
             <hr />
             <div class="row text-center mt-2">
-                <div class="col-4">
+                <div class="col-3">
                     <div class="card bg-success text-white p-3">
                         <h4>@Model.PersonasPresentes.Count</h4>
                         <p class="mb-0">Presentes</p>
                     </div>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <div class="card bg-danger text-white p-3">
                         <h4>
-                            @(Model.Estudiantes.Count - 
+                            @(Model.Estudiantes.Count -
                               Model.PersonasPresentes.Count)
                         </h4>
                         <p class="mb-0">Ausentes</p>
                     </div>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
+                    <div class="card bg-warning text-dark p-3">
+                        <h4>@Model.PersonasConSalida.Count</h4>
+                        <p class="mb-0">Con Salida</p>
+                    </div>
+                </div>
+                <div class="col-3">
                     <div class="card bg-primary text-white p-3">
                         <h4>@Model.Estudiantes.Count</h4>
                         <p class="mb-0">Total</p>
@@ -146,4 +205,5 @@
         window.location.href = '/Asistencias/Panel?ubicacionId=' + id;
     }
 </script>
+
 }

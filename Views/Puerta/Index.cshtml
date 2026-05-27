@@ -1,0 +1,325 @@
+﻿@{
+    ViewData["Title"] = "Control Puerta Principal";
+    var registros = ViewBag.RegistrosHoy as
+        List<SistemaBiometricoUMG.Models.RegistroIngreso>;
+}
+
+<div class="container-fluid mt-4">
+    <div class="row g-3">
+
+        <!-- Panel izquierdo - Cámara -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header text-white text-center py-3"
+                     style="background-color:#003366;">
+                    <h4>🚪 Control Puerta Principal</h4>
+                    <small>Universidad Mariano Gálvez</small>
+                </div>
+                <div class="card-body text-center">
+
+                    <!-- Selector de tipo -->
+                    <div class="d-flex justify-content-center gap-3 mb-3">
+                        <button onclick="setTipo('Entrada')"
+                                id="btnEntrada"
+                                class="btn btn-success btn-lg px-4 active-tipo">
+                            🟢 ENTRADA
+                        </button>
+                        <button onclick="setTipo('Salida')"
+                                id="btnSalida"
+                                class="btn btn-outline-danger btn-lg px-4">
+                            🔴 SALIDA
+                        </button>
+                    </div>
+
+                    <video id="camara" width="100%" height="300"
+                           autoplay class="border rounded mb-2"
+                           style="max-width:400px;"></video>
+                    <canvas id="canvas" width="400" height="300"
+                            class="d-none"></canvas>
+
+                    <div class="d-grid gap-2 mt-2"
+                         style="max-width:400px; margin:auto;">
+                        <button class="btn btn-primary btn-lg"
+                                onclick="iniciarCamara()">
+                            📷 Activar Cámara
+                        </button>
+                        <button class="btn btn-success btn-lg"
+                                id="btnScan"
+                                onclick="iniciarScaneo()" disabled>
+                            🔍 Iniciar Reconocimiento
+                        </button>
+                        <button class="btn btn-danger btn-lg d-none"
+                                id="btnDetener"
+                                onclick="detenerScaneo()">
+                            ⏹️ Detener
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel derecho - Resultado -->
+        <div class="col-md-6">
+
+            <!-- Resultado del reconocimiento -->
+            <div class="card shadow mb-3">
+                <div class="card-body">
+
+                    <div id="panelEspera" class="text-center p-4">
+                        <h4>⏳ Esperando...</h4>
+                        <p>Active la cámara e inicie el reconocimiento</p>
+                    </div>
+
+                    <div id="panelEntrada" class="d-none">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white text-center">
+                                <h4>✅ ENTRADA REGISTRADA</h4>
+                            </div>
+                            <div class="card-body text-center">
+                                <img id="fotoEntrada" src=""
+                                     class="rounded-circle mb-2"
+                                     width="100" height="100"
+                                     style="object-fit:cover;" />
+                                <h5 id="nombreEntrada"></h5>
+                                <p id="horaEntrada" class="text-muted"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="panelSalida" class="d-none">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning text-center">
+                                <h4>🚶 SALIDA REGISTRADA</h4>
+                            </div>
+                            <div class="card-body text-center">
+                                <img id="fotoSalida" src=""
+                                     class="rounded-circle mb-2"
+                                     width="100" height="100"
+                                     style="object-fit:cover;" />
+                                <h5 id="nombreSalida"></h5>
+                                <p id="horaSalida" class="text-muted"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="panelRestriccion" class="d-none">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white text-center">
+                                <h4>⛔ ACCESO DENEGADO</h4>
+                            </div>
+                            <div class="card-body text-center">
+                                <h1>🚫</h1>
+                                <h5 id="nombreRestriccion"></h5>
+                                <div class="alert alert-danger">
+                                    <strong>Motivo:</strong>
+                                    <span id="motivoRestriccion"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Resumen del día -->
+            <div class="card shadow mb-3">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="card bg-success text-white p-3">
+                                <h3>@ViewBag.TotalEntradas</h3>
+                                <p class="mb-0">🟢 Entradas hoy</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-danger text-white p-3">
+                                <h3>@ViewBag.TotalSalidas</h3>
+                                <p class="mb-0">🔴 Salidas hoy</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Últimos registros -->
+            <div class="card shadow">
+                <div class="card-header" style="background-color:#003366;">
+                    <h6 class="mb-0" style="color:white;">
+                        📋 Últimos movimientos hoy
+                    </h6>
+                </div>
+                <div class="card-body p-2">
+                    <div id="listaMovimientos">
+                        @if (registros != null && registros.Any())
+                        {
+                            @foreach (var r in registros)
+                            {
+                                <div class="d-flex align-items-center
+                                    gap-2 p-2 border-bottom">
+                                    @if (!string.IsNullOrEmpty(
+                                        r.Persona?.FotoRuta))
+                                    {
+                                        <img src="@r.Persona.FotoRuta"
+                                             width="35" height="35"
+                                             class="rounded-circle"
+                                             style="object-fit:cover;" />
+                                    }
+                                    <div>
+                                        <strong style="font-size:0.85rem;">
+                                            @r.Persona?.Nombre
+                                            @r.Persona?.Apellido
+                                        </strong>
+                                        <br />
+                                        <small class="text-muted">
+                                            @r.FechaHora.ToString("HH:mm:ss")
+                                        </small>
+                                    </div>
+                                    <span class="ms-auto badge @(
+                                          r.TipoMovimiento == "Entrada" ?
+                                          "bg-success" : "bg-danger")">
+                                        @r.TipoMovimiento
+                                    </span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-center text-muted p-3">
+                                Sin movimientos hoy
+                            </p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let stream = null;
+        let intervalScan = null;
+        let tipoActual = 'Entrada';
+
+        function setTipo(tipo) {
+            tipoActual = tipo;
+            if (tipo === 'Entrada') {
+                document.getElementById('btnEntrada').className =
+                    'btn btn-success btn-lg px-4';
+                document.getElementById('btnSalida').className =
+                    'btn btn-outline-danger btn-lg px-4';
+            } else {
+                document.getElementById('btnEntrada').className =
+                    'btn btn-outline-success btn-lg px-4';
+                document.getElementById('btnSalida').className =
+                    'btn btn-danger btn-lg px-4';
+            }
+        }
+
+        async function iniciarCamara() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('camara').srcObject = stream;
+                document.getElementById('btnScan').disabled = false;
+            } catch (err) {
+                alert('No se pudo acceder a la cámara: ' + err.message);
+            }
+        }
+
+        function iniciarScaneo() {
+            document.getElementById('btnScan').classList.add('d-none');
+            document.getElementById('btnDetener').classList.remove('d-none');
+            intervalScan = setInterval(capturarYProcesar, 3000);
+        }
+
+        function detenerScaneo() {
+            clearInterval(intervalScan);
+            document.getElementById('btnScan').classList.remove('d-none');
+            document.getElementById('btnDetener').classList.add('d-none');
+            mostrarPanel('espera');
+        }
+
+        async function capturarYProcesar() {
+            const video = document.getElementById('camara');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, 400, 300);
+            const imagenBase64 = canvas.toDataURL('image/png');
+
+            try {
+                const response = await fetch('/Puerta/Procesar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        imagenBase64,
+                        tipoMovimiento: tipoActual
+                    })
+                });
+
+                const data = await response.json();
+                procesarResultado(data);
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function procesarResultado(data) {
+            const hora = new Date().toLocaleTimeString();
+
+            if (data.encontrado && !data.tieneRestriccion) {
+                if (data.tipo === 'Entrada') {
+                    document.getElementById('fotoEntrada').src = data.foto;
+                    document.getElementById('nombreEntrada').textContent =
+                        data.nombre;
+                    document.getElementById('horaEntrada').textContent =
+                        '🕐 ' + hora;
+                    mostrarPanel('entrada');
+                } else {
+                    document.getElementById('fotoSalida').src = data.foto;
+                    document.getElementById('nombreSalida').textContent =
+                        data.nombre;
+                    document.getElementById('horaSalida').textContent =
+                        '🕐 ' + hora;
+                    mostrarPanel('salida');
+                }
+                agregarMovimiento(data.nombre, data.foto, hora, data.tipo);
+                setTimeout(() => mostrarPanel('espera'), 4000);
+
+            } else if (data.encontrado && data.tieneRestriccion) {
+                document.getElementById('nombreRestriccion').textContent =
+                    data.nombre;
+                document.getElementById('motivoRestriccion').textContent =
+                    data.motivoRestriccion;
+                mostrarPanel('restriccion');
+                setTimeout(() => mostrarPanel('espera'), 4000);
+            }
+        }
+
+        function mostrarPanel(tipo) {
+            ['panelEspera', 'panelEntrada', 'panelSalida',
+             'panelRestriccion'].forEach(p => {
+                document.getElementById(p).classList.add('d-none');
+            });
+            document.getElementById('panel' +
+                tipo.charAt(0).toUpperCase() + tipo.slice(1))
+                .classList.remove('d-none');
+        }
+
+        function agregarMovimiento(nombre, foto, hora, tipo) {
+            const lista = document.getElementById('listaMovimientos');
+            const color = tipo === 'Entrada' ? 'bg-success' : 'bg-danger';
+            const fotoHtml = foto ?
+                `<img src="${foto}" width="35" height="35"
+                      class="rounded-circle" style="object-fit:cover;">` : '';
+            lista.innerHTML = `
+                <div class="d-flex align-items-center gap-2 p-2 border-bottom">
+                    ${fotoHtml}
+                    <div>
+                        <strong style="font-size:0.85rem;">${nombre}</strong>
+                        <br><small class="text-muted">${hora}</small>
+                    </div>
+                    <span class="ms-auto badge ${color}">${tipo}</span>
+                </div>` + lista.innerHTML;
+        }
+    </script>
+}

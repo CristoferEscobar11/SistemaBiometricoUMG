@@ -15,5 +15,8 @@ namespace SistemaBiometricoUMG.Models
         public DbSet<Restriccion> Restricciones { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<HistorialCarrera> HistorialCarreras { get; set; }
+        public DbSet<Curso> Cursos { get; set; }
+
+        public DbSet<Inscripcion> Inscripciones { get; set; }
     }
 }

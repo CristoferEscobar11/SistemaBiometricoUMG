@@ -1,0 +1,79 @@
+﻿@model List<SistemaBiometricoUMG.Models.Curso>
+@{
+    ViewData["Title"] = "Cursos por Salón";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header py-3 d-flex justify-content-between"
+             style="background-color:#003366;">
+            <div>
+                <h4 class="mb-0" style="color:white;">
+                    📚 Cursos por Salón
+                </h4>
+                <small style="color:#aad4ff;">
+                    Asignación de cursos a salones
+                </small>
+            </div>
+            <a href="/Cursos/Crear" class="btn btn-warning">
+                ➕ Nuevo Curso
+            </a>
+        </div>
+        <div class="card-body">
+
+            @if (TempData["Exito"] != null)
+            {
+                <div class="alert alert-success">@TempData["Exito"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Curso</th>
+                            <th>Carrera</th>
+                            <th>Salón</th>
+                            <th>Horario</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model)
+                        {
+                            <tr>
+                                <td><strong>@c.Nombre</strong></td>
+                                <td>@c.Carrera</td>
+                                <td>🚪 @c.Ubicacion?.Nombre</td>
+                                <td>⏰ @c.Horario</td>
+                                <td>
+                                    <a asp-controller="Cursos"
+                                       asp-action="Estudiantes"
+                                       asp-route-cursoId="@c.Id"
+                                       class="btn btn-sm btn-info me-1">
+                                        👥 Estudiantes
+                                    </a>
+                                    <form method="post"
+                                          action="/Cursos/Desactivar"
+                                          class="d-inline"
+                                          onsubmit="return confirm(
+                                        '¿Desactivar este curso?')">
+                                        <input type="hidden"
+                                               name="id" value="@c.Id" />
+                                        <button type="submit"
+                                                class="btn btn-sm btn-danger">
+                                            🚫 Desactivar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

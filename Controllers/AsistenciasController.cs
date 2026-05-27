@@ -29,22 +29,53 @@ namespace SistemaBiometricoUMG.Controllers
                 .Where(u => u.Tipo == "salon")
                 .ToListAsync();
 
-            var estudiantes = await _context.Personas
-                .Where(p => p.TipoPersona == "Estudiante" && p.Activo)
-                .ToListAsync();
-
             var hoy = DateOnly.FromDateTime(DateTime.Today);
 
-            var ingresos = await _context.RegistrosIngreso
+            // Obtener curso asignado al salón
+            var cursoDelSalon = await _context.Cursos
+                .Include(c => c.Ubicacion)
+                .FirstOrDefaultAsync(c => c.UbicacionId == ubicacionId
+                                       && c.Activo);
+
+            // Obtener estudiantes inscritos en el curso del salón
+            List<Persona> estudiantes;
+            if (cursoDelSalon != null)
+            {
+                var inscripciones = await _context.Inscripciones
+                    .Include(i => i.Persona)
+                    .Where(i => i.CursoId == cursoDelSalon.Id && i.Activo)
+                    .ToListAsync();
+                estudiantes = inscripciones
+                    .Select(i => i.Persona)
+                    .Where(p => p != null)
+                    .ToList();
+            }
+            else
+            {
+                estudiantes = await _context.Personas
+                    .Where(p => p.TipoPersona == "Estudiante" && p.Activo)
+                    .ToListAsync();
+            }
+
+            // Registros de hoy para esta ubicación
+            var registros = await _context.RegistrosIngreso
                 .Where(r => r.UbicacionId == ubicacionId &&
                             r.FechaHora.Date == DateTime.Today)
-                .Select(r => r.PersonaId)
                 .ToListAsync();
+
+            var ingresos = registros
+                .Where(r => r.TipoMovimiento == "Entrada")
+                .Select(r => r.PersonaId)
+                .ToList();
+
+            var salidas = registros
+                .Where(r => r.TipoMovimiento == "Salida")
+                .Select(r => r.PersonaId)
+                .ToList();
 
             var yaConfirmado = await _context.Asistencias
                 .AnyAsync(a => a.UbicacionId == ubicacionId &&
-                               a.Fecha == hoy &&
-                               a.Confirmado);
+                               a.Fecha == hoy && a.Confirmado);
 
             var vm = new AsistenciaPanelViewModel
             {
@@ -52,8 +83,10 @@ namespace SistemaBiometricoUMG.Controllers
                 UbicacionSeleccionada = ubicacionId,
                 Estudiantes = estudiantes,
                 PersonasPresentes = ingresos,
+                PersonasConSalida = salidas,
                 YaConfirmado = yaConfirmado,
-                Fecha = DateTime.Today
+                Fecha = DateTime.Today,
+                CursoDelSalon = cursoDelSalon
             };
 
             return View(vm);
@@ -61,7 +94,8 @@ namespace SistemaBiometricoUMG.Controllers
 
         // ── Confirmar asistencia ─────────────────────────────────────
         [HttpPost]
-        public async Task<IActionResult> Confirmar(int ubicacionId, int catedraticoid)
+        public async Task<IActionResult> Confirmar(int ubicacionId,
+                                                    int catedraticoid)
         {
             var hoy = DateOnly.FromDateTime(DateTime.Today);
 
@@ -75,16 +109,38 @@ namespace SistemaBiometricoUMG.Controllers
                 return RedirectToAction("Panel", new { ubicacionId });
             }
 
-            var estudiantes = await _context.Personas
-                .Where(p => p.TipoPersona == "Estudiante" && p.Activo)
-                .ToListAsync();
+            // Solo confirmar estudiantes inscritos en el curso del salón
+            var cursoDelSalon = await _context.Cursos
+                .FirstOrDefaultAsync(c => c.UbicacionId == ubicacionId
+                                       && c.Activo);
+
+            List<Persona> estudiantes;
+            if (cursoDelSalon != null)
+            {
+                var inscripciones = await _context.Inscripciones
+                    .Include(i => i.Persona)
+                    .Where(i => i.CursoId == cursoDelSalon.Id && i.Activo)
+                    .ToListAsync();
+                estudiantes = inscripciones
+                    .Select(i => i.Persona)
+                    .Where(p => p != null)
+                    .ToList();
+            }
+            else
+            {
+                estudiantes = await _context.Personas
+                    .Where(p => p.TipoPersona == "Estudiante" && p.Activo)
+                    .ToListAsync();
+            }
 
             var ingresos = await _context.RegistrosIngreso
                 .Where(r => r.UbicacionId == ubicacionId &&
-                            r.FechaHora.Date == DateTime.Today)
+                            r.FechaHora.Date == DateTime.Today &&
+                            r.TipoMovimiento == "Entrada")
                 .Select(r => r.PersonaId)
                 .ToListAsync();
 
+            // Registrar asistencia individual por estudiante
             foreach (var estudiante in estudiantes)
             {
                 _context.Asistencias.Add(new Asistencia
@@ -115,6 +171,31 @@ namespace SistemaBiometricoUMG.Controllers
             }
 
             TempData["Exito"] = "✅ Asistencia confirmada correctamente";
+            return RedirectToAction("Panel", new { ubicacionId });
+        }
+
+        // ── Registrar salida de salón ────────────────────────────────
+        [HttpPost]
+        public async Task<IActionResult> RegistrarSalida(int personaId,
+                                                          int ubicacionId)
+        {
+            try
+            {
+                _context.RegistrosIngreso.Add(new RegistroIngreso
+                {
+                    PersonaId = personaId,
+                    UbicacionId = ubicacionId,
+                    FechaHora = DateTime.Now,
+                    TipoMovimiento = "Salida"
+                });
+
+                await _context.SaveChangesAsync();
+                TempData["Exito"] = "✅ Salida registrada correctamente";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error: " + ex.Message;
+            }
             return RedirectToAction("Panel", new { ubicacionId });
         }
 
@@ -259,7 +340,6 @@ namespace SistemaBiometricoUMG.Controllers
 
             var hoy = DateOnly.FromDateTime(DateTime.Today);
 
-            // ✅ Ahora lee de Asistencias en lugar de RegistrosIngreso
             var asistencias = await _context.Asistencias
                 .Where(a => a.Fecha == hoy)
                 .ToListAsync();

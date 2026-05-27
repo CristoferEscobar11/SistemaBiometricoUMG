@@ -1,0 +1,136 @@
+﻿@model List<SistemaBiometricoUMG.Models.Inscripcion>
+@{
+    ViewData["Title"] = "Estudiantes del Curso";
+    var curso = ViewBag.Curso as SistemaBiometricoUMG.Models.Curso;
+    var todos = ViewBag.TodosEstudiantes as
+        List<SistemaBiometricoUMG.Models.Persona>;
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header py-3"
+             style="background-color:#003366;">
+            <h4 class="mb-0" style="color:white;">
+                👥 Estudiantes — @curso?.Nombre
+            </h4>
+            <small style="color:#aad4ff;">
+                @curso?.Carrera — @curso?.Ubicacion?.Nombre
+                — @curso?.Horario
+            </small>
+        </div>
+        <div class="card-body">
+
+            @if (TempData["Exito"] != null)
+            {
+                <div class="alert alert-success">@TempData["Exito"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <!-- Agregar estudiante -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <form method="post" action="/Cursos/Inscribir"
+                          class="d-flex gap-2">
+                        <input type="hidden" name="cursoId"
+                               value="@curso?.Id" />
+                        <select name="personaId" class="form-select" required>
+                            <option value="">
+                                -- Seleccione estudiante --
+                            </option>
+                            @foreach (var e in todos)
+                            {
+                                <option value="@e.Id">
+                                    @e.Nombre @e.Apellido — @e.Correo
+                                </option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-success">
+                            ➕ Inscribir
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Lista de inscritos -->
+            <h5>Estudiantes inscritos (@Model.Count)</h5>
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    No hay estudiantes inscritos en este curso.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Foto</th>
+                                <th>Nombre</th>
+                                <th>Correo</th>
+                                <th>Fecha Inscripción</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var i in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(
+                                            i.Persona?.FotoRuta))
+                                        {
+                                            <img src="@i.Persona.FotoRuta"
+                                                 width="45" height="45"
+                                                 class="rounded-circle"
+                                                 style="object-fit:cover;" />
+                                        }
+                                        else
+                                        {
+                                            <span>Sin foto</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <strong>
+                                            @i.Persona?.Nombre
+                                            @i.Persona?.Apellido
+                                        </strong>
+                                    </td>
+                                    <td>@i.Persona?.Correo</td>
+                                    <td>
+                                        @i.FechaInscripcion
+                                        .ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td>
+                                        <form method="post"
+                                              action="/Cursos/Desinscribir"
+                                              onsubmit="return confirm(
+                                            '¿Remover estudiante?')">
+                                            <input type="hidden"
+                                                   name="inscripcionId"
+                                                   value="@i.Id" />
+                                            <input type="hidden"
+                                                   name="cursoId"
+                                                   value="@curso?.Id" />
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger">
+                                                🚫 Remover
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <a href="/Cursos/Index" class="btn btn-secondary mt-3">
+                ← Volver a Cursos
+            </a>
+        </div>
+    </div>
+</div>

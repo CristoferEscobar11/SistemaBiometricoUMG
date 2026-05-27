@@ -1,0 +1,73 @@
+﻿@{
+    ViewData["Title"] = "Nuevo Curso";
+}
+
+<div class="container mt-4">
+    <div class="card shadow" style="max-width:600px; margin:auto;">
+        <div class="card-header text-white py-3"
+             style="background-color:#003366;">
+            <h4 class="mb-0">📚 Nuevo Curso</h4>
+        </div>
+        <div class="card-body">
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <form method="post" action="/Cursos/Crear">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        Nombre del Curso *
+                    </label>
+                    <input name="Nombre" class="form-control"
+                           placeholder="Ej: Programación III"
+                           required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Carrera *</label>
+                    <select name="Carrera" class="form-select" required>
+                        <option value="">-- Seleccione --</option>
+                        <option value="Ingeniería en Sistemas">
+                            Ingeniería en Sistemas
+                        </option>
+                        <option value="Derecho">Derecho</option>
+                        <option value="Medicina">Medicina</option>
+                        <option value="Administración">Administración</option>
+                        <option value="Psicología">Psicología</option>
+                        <option value="Contabilidad">Contabilidad</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Salón *</label>
+                    <select name="UbicacionId" class="form-select" required>
+                        <option value="">-- Seleccione --</option>
+                        @foreach (var u in ViewBag.Ubicaciones as
+                            List<SistemaBiometricoUMG.Models.Ubicacion>)
+                        {
+                            <option value="@u.Id">@u.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Horario</label>
+                    <input name="Horario" class="form-control"
+                           placeholder="Ej: 07:00 - 09:00" />
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success btn-lg px-4">
+                        ✅ Guardar Curso
+                    </button>
+                    <a href="/Cursos/Index"
+                       class="btn btn-secondary btn-lg px-4 ms-2">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
